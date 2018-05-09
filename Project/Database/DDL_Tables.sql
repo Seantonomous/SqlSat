@@ -1,193 +1,211 @@
+-------------------------------------------------------------------------
+IF OBJECT_ID (N'person', N'U') IS NOT NULL
+	DROP TABLE person
+
 create table person
-    (id int primary key nonclustered not null,
-        firstName varchar(20) not null,
-        lastName varchar(25) not null,
-        gender varchar(1) not null,
-        email varchar(254) not null
-        address varchar(100) not null,
-        cityId int not null,
-        countryId int not null,
-        constraint FK_City foreign key (cityId),
-            references city(id),
-        constraint FK_Country foreign key (countryId)
-            references country(id)
+    (	[id]			int identity (1,1) not null,
+        [firstName]		varchar(30)		not null,
+        [lastName]		varchar(50)		not null,
+        [addressId]		int				not null,
+		[email]			varchar(254)	not null,
+
+		constraint pk_personId primary key clustered ([id] ASC)
     )
 
-create table city
-    (id int primary key nonclustered not null,
-        name varchar(100) not null,
-        region varchar(100) not null,
-        countryId int not null,
-        constraint FK_Country foreign key (countryId)
-            references country(id)
-    )
+create unique nonclustered index ak_name on person (firstName, lastName)
 
-create table country
-    (id int primary key nonclustered not null,
-        name varchar(100) not null
-    )
+-------------------------------------------------------------------------
+IF OBJECT_ID (N'addressTable', N'U') IS NOT NULL
+	DROP TABLE addressTable
 
-create table sqlSaturdayEvent
-    (id int primary key nonclustered not null,
-        eventStart datetime2 not null,
-        eventEnd datetime2 not null,
-        venueId not null,
-        constraint FK_Venue foreign key (venueId)
+create table addressTable 
+	(	[addressId]		int identity(1,1) not null,
+		[streetAddress]	varchar(255) not null,
+		[city]			varchar(75) not null,
+		[zip]			varchar(10) not null,
+		[addressState]	varchar(50),
+		[country]		varchar(75) not null,
+
+		constraint pk_id primary key (addressId) 
+	)
+
+create unique nonclustered index ak_address on addressTable(streetAddress, city)
+
+---------------------------------------------------------------
+IF OBJECT_ID (N'sqlEvent', N'U') IS NOT NULL
+	DROP TABLE SqlSaturdayEvent 
+
+CREATE TABLE sqlEvent
+	(	[eventId]		int	identity(1,1) not null,
+        [date]			date		not null,
+        [venueId]		int			not null,
+
+		constraint pk_eventId primary key clustered ([eventId] ASC),
+        constraint fk_venue foreign key (venueId)
             references venue(id)
     )
+
+----------------------------------------------------------------
+IF OBJECT_ID (N'venue', N'U') IS NOT NULL
+	DROP TABLE venue
 
 create table venue
-    (id int primary key nonclustered not null,
-        name varchar(100) not null,
-        address varchar(100) not null,
-        zip varchar(10) not null,
-        cityId int not null,
-        countryId int not null,
-        constraint FK_City foreign key (cityId)
-            references city(id),
-        constraint FK_Country foreign key (countryId)
-            references country(id)
+    (	[venueId]			int identity(1,1) not null,
+		[name]				varchar(255)	not null,
+		[addressId]			int				not null,
+
+		constraint pk_venueId primary key clustered ([venueId] ASC),
+		constraint fk_addressId foreign key (addressId)
+			references addressTable(addressId)
     )
 
-create table student
-    (id int primary key nonclustered not null,
-        personId int not null,
-        companyId int not null,
-        constraint FK_Person foreign key (personId)
-            references person(id),
-        constraint FK_Company foreign key (companyId)
-            references company(id)
-    )
+create unique nonclustered index ak_venue on venue (name)
 
-create table company
-    (id int primary key nonclustered not null,
-        name varchar(50) not null,
-        description varchar(200) not null,
-        address varchar(100) not null,
-        zip varchar(10) not null,
-        cityId int not null,
-        countryId int not null,
-        constraint FK_City foreign key (cityId)
-            references city(id),
-        constraint FK_Country foreign key (countryId)
-            references country(id)
-    )
+---------------------------------------------------------------
+IF OBJECT_ID (N'organizer', N'U') IS NOT NULL
+	DROP TABLE organizer
 
 create table organizer
-    (id int primary key nonclustered not null,
-        personId int not null,
-        eventId int not null,
-        constraint FK_Person foreign key (personId)
+    (	[personId]		int not null,
+        [eventId]		int not null,
+
+		constraint pk_personEvent primary key (personId, eventId),
+        constraint fk_person foreign key (personId)
             references person(id),
-        constraint FK_Event foreign key (eventId)
-            references sqlSaturdayEvent(id)
+        constraint fk_event foreign key (eventId)
+            references sqlEvent(eventId)
     )
+
+---------------------------------------------------------------
+IF OBJECT_ID (N'volunteer', N'U') IS NOT NULL
+	DROP TABLE volunteer
 
 create table volunteer
-    (id int primary key nonclustered not null,
-        personId int not null,
-        eventId int not null,
-        constraint FK_Person foreign key (personId)
+    (	[personId] int not null,
+        [eventId] int not null,
+
+		constraint pk_personEvent primary key (personId, eventId),
+        constraint fk_person foreign key (personId)
             references person(id),
-        constraint FK_Event foreign key (eventId)
-            references sqlSaturdayEvent(id)
+        constraint fk_event foreign key (eventId)
+            references sqlEvent(eventId)
     )
 
+------------------------------------------------------------
+IF OBJECT_ID (N'vendor', N'U') IS NOT NULL
+	DROP TABLE vendor
 
-create table vendor
-    (id int primary key nonclustered not null,
-        personId int not null,
-        companyId int not null
-    )
+CREATE TABLE vendor (
+	[vendorId]	int identity(1,1) not null,
+	[name]		varchar(50)		not null,
 
-create table rafflePrize
-    (id int primary key nonclustered not null,
-        item varchar(50) int not null,
-        vendorId int not null,
-        eventId int not null,
-        
+	constraint pk_vendorId primary key clustered([vendorId] ASC)
+	)
 
+create unique nonclustered index ak_vendor on vendor (name)
+
+-------------------------------------------------------------
+IF OBJECT_ID (N'eventTable', N'U') IS NOT NULL
+	DROP TABLE eventTable
 
 create table eventTable
-    (id int primary key nonclustered not null,
-        venueId int not null,
-        tableDate date not null,
-        location varchar(50),
-        constraint FK_Venue foreign key (venueId)
-            references venue(id)
+    (	[tableId]		int identity(1,1) not null,
+		[tableNumber]	int not null,
+        [eventId]		int not null,
+
+		constraint pk_tableId primary key (tableId),
+        constraint fk_event foreign key (eventId)
+            references sqlEvent(eventId)
     )
+
+---------------------------------------------------------------
+IF OBJECT_ID (N'vendorTable', N'U') IS NOT NULL
+	DROP TABLE vendorTable
 
 create table vendorTable
-    (vendorId int not null,
-        eventTableId int not null,
-        constraint FK_Vendor foreign key (vendorId)
-            references vendor(id),
-        constraint FK_Table foreign key (eventTableId)
-            references eventTable(id)
+    (	[vendorId]		int not null,
+        [tableId]		int not null,
+
+		constraint pk_vendorTable primary key (vendorId, tableId),
+        constraint fk_vendor foreign key (vendorId)
+            references vendor(vendorId),
+        constraint fk_table foreign key (tableId)
+            references eventTable(tableId)
     )
 
-create table presenter
-    (id int primary key nonclustered not null,
-        personId int not null,
-        vendorId int,
-        constraint FK_Person foreign key (personId)
-            references person(id),
-        constraint FK_Vendor foreign key (vendorId)
-            references vendor(id)
-    )
+---------------------------------------------------------------
+IF OBJECT_ID (N'presenter', N'U') IS NOT NULL
+	DROP TABLE presenter
+
+CREATE TABLE presenter (
+	[presenterId]		int identity(1,1) not null,
+	[personId]			int	not null,
+
+	constraint pk_presenterId primary key clustered ([presenterId] ASC),
+	constraint fk_person foreign key ([personId]) references person(id)
+);
+
+---------------------------------------------------------------
+IF OBJECT_ID (N'room', N'U') IS NOT NULL
+	DROP TABLE room
 
 create table room 
-    (id int primary key nonclustered not null,
-        roomNumber int,
-        roomName varchar(100),
-        capacity int,
-        venueId int not null,
-        constraint FK_Venue foreign key (venueId)
-            references venue(id)
+    (	[roomId]		int identity(1,1) not null,
+        [roomNumber]	int,
+        [roomName]		varchar(100),
+        [capacity]		int not null,
+        [venueId]		int not null,
+
+		constraint pk_roomId primary key clustered ([roomId] ASC),
+        constraint fk_venue foreign key (venueId)
+            references venue(venueId)
     )
 
-create table class
-    (id int primary key nonclustered not null,
-        title varchar(100) not null,
-        description varchar(250) not null,
-        presenterId int not null,
-        roomId int not null,
-        startTime datetime2 not null,
-        --difficulty scale 1-10
-        difficultyLevel smallint not null,
-        --complexity scale 1-10
-        complexity smallint not null,
-        --readiness (beginner, intermediate, advanced)
-        readiness varchar(12) not null,
-        constraint FK_Presenter foreign key (presenterId)
-            references presenter(id),
-        constraint FK_Room foreign key (roomId)
-            references room(id)
+---------------------------------------------------------------
+IF OBJECT_ID (N'class', N'U') IS NOT NULL
+	DROP TABLE class
+
+CREATE TABLE class (
+	[classId]		int identity(1,1) not null,
+	[presenterId]	int				not null,
+	[name]			varchar(75)		not null,
+	[duration]		smallint		not null,
+	[level]			tinyint			not null,
+	[synopsis]		varchar(1000)	not null,
+	[eventId]		int				not null
+
+	constraint pk_classId primary key clustered ([classId] ASC),
+	constraint fk_presenter foreign key ([presenterId]) references presenter(presenterId),
+	constraint fk_event foreign key ([eventId]) references sqlEvent(eventId)
+	)
+
+-----------------------------------------------------------------------
+IF OBJECT_ID (N'track', N'U') IS NOT NULL
+	DROP TABLE track
+
+create table track (
+		[trackId]	int identity(1,1) not null,
+        [title]		varchar(50)	not null,
+
+		constraint pk_trackId primary key clustered ([trackId] ASC)
     )
 
-create table track
-    (id int primary key nonclustered not null,
-        title varchar(50) not null
-    )
+create unique nonclustered index ak_title on track (title)
 
+-----------------------------------------------------------------------
+IF OBJECT_ID (N'classTrack', N'U') IS NOT NULL
+	DROP TABLE classTrack
 
 create table classTrack
-    (trackId int not null,
-        classId int not null,
-        constraint FK_Track foreign key (trackId)
-            references track(id),
-        constraint FK_Class foreign key (classId)
-            references class(id),
-        constraint PK_ClassTrack primary key (trackId, classId)
+    (	[trackId]	int not null,
+        [classId]	int not null,
+
+        constraint fk_track foreign key (trackId)
+            references track(trackId),
+        constraint fk_class foreign key (classId)
+            references class(classId),
+        constraint pk_classTrack primary key (trackId, classId)
     )
 
-create table usergroup
-    (id int primary key nonclustered not null,
-        groupname varchar(50) not null,
-        totalmembers int not null,
-        cityid int not null,
-        constraint fk_city foreign key (cityid)
-            references city(id)
-    )
 
 
