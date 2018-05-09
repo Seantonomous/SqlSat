@@ -96,8 +96,8 @@ IF OBJECT_ID (N'vendor', N'U') IS NOT NULL
 	DROP TABLE vendor
 
 CREATE TABLE vendor (
-	[vendorId]	int identity(1,1) not null,
-	[name]		varchar(50)		not null,
+	[vendorId]	int identity(1,1)	not null,
+	[name]		varchar(100)		not null,
 
 	constraint pk_vendorId primary key clustered([vendorId] ASC)
 	)
@@ -114,7 +114,7 @@ create table eventTable
         [eventId]		int not null,
 
 		constraint pk_tableId primary key (tableId),
-        constraint fk_event foreign key (eventId)
+        constraint fk_tableEvent foreign key (eventId)
             references sqlEvent(eventId)
     )
 
@@ -127,9 +127,9 @@ create table vendorTable
         [tableId]		int not null,
 
 		constraint pk_vendorTable primary key (vendorId, tableId),
-        constraint fk_vendor foreign key (vendorId)
+        constraint fk_forVendor foreign key (vendorId)
             references vendor(vendorId),
-        constraint fk_table foreign key (tableId)
+        constraint fk_atTable foreign key (tableId)
             references eventTable(tableId)
     )
 
@@ -170,7 +170,7 @@ CREATE TABLE class (
 	[presenterId]	int				not null,
 	[name]			varchar(75)		not null,
 	[duration]		smallint		not null,
-	[level]			tinyint			not null,
+	[level]			varchar(20)		not null,
 	[synopsis]		varchar(1000)	not null,
 	[eventId]		int				not null
 
